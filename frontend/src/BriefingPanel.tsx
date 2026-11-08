@@ -21,7 +21,60 @@ type View = {
   model: string;
   stale: boolean;
   draft: Draft | null;
+  approvals: Approval[];
+  usable: boolean;
 };
+type Approval = {
+  draftId: string;
+  approvedAt: string;
+  approvedBy: string;
+  note: string | null;
+  status: "CURRENT" | "STALE" | "SUPERSEDED";
+};
+
+function ApprovalForm({
+  disabled,
+  submitting,
+  approve,
+}: {
+  disabled: boolean;
+  submitting: boolean;
+  approve: (reviewed: boolean, note: string) => Promise<void>;
+}) {
+  const [reviewed, setReviewed] = useState(false);
+  const [note, setNote] = useState("");
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        void approve(reviewed, note);
+      }}
+    >
+      <h4>Adviser source review</h4>
+      <label>
+        <input
+          type="checkbox"
+          checked={reviewed}
+          disabled={disabled || submitting}
+          onChange={(event) => setReviewed(event.target.checked)}
+        />
+        I reviewed every source
+      </label>
+      <label>
+        Review note (optional)
+        <textarea
+          value={note}
+          maxLength={1000}
+          disabled={disabled || submitting}
+          onChange={(event) => setNote(event.target.value)}
+        />
+      </label>
+      <button type="submit" disabled={disabled || submitting || !reviewed}>
+        {submitting ? "Saving…" : "Approve meeting briefing"}
+      </button>
+    </form>
+  );
+}
 
 export default function BriefingPanel({
   caseId,
@@ -88,7 +141,18 @@ export default function BriefingPanel({
       });
       if (active.current)
         setView((previous) =>
-          previous ? { ...previous, draft, stale: false } : previous,
+          previous
+            ? {
+                ...previous,
+                draft,
+                stale: false,
+                usable: false,
+                approvals: (previous.approvals ?? []).map((approval) => ({
+                  ...approval,
+                  status: "SUPERSEDED",
+                })),
+              }
+            : previous,
         );
     } catch (failure) {
       if (active.current)
@@ -103,15 +167,65 @@ export default function BriefingPanel({
     }
   }
 
+  async function approve(reviewedSources: boolean, note: string) {
+    const draft = view?.draft;
+    if (!draft || generating.current) return;
+    generating.current = true;
+    generation.current++;
+    setSubmitting(true);
+    setCommandError("");
+    try {
+      const approval = await api<Approval>(
+        `/cases/${caseId}/briefing/approval`,
+        "POST",
+        {
+          draftId: draft.id,
+          revision,
+          reviewedSources,
+          note,
+        },
+      );
+      if (active.current)
+        setView((previous) =>
+          previous
+            ? {
+                ...previous,
+                usable: true,
+                approvals: [
+                  approval,
+                  ...(previous.approvals ?? []).filter(
+                    (item) => item.draftId !== approval.draftId,
+                  ),
+                ].slice(0, 10),
+              }
+            : previous,
+        );
+    } catch (failure) {
+      if (active.current) {
+        setCommandError(
+          failure instanceof Error ? failure.message : "Approval failed.",
+        );
+        setView((previous) =>
+          previous ? { ...previous, usable: false } : previous,
+        );
+      }
+    } finally {
+      generating.current = false;
+      if (active.current) setSubmitting(false);
+    }
+  }
+
   const draft = view?.draft;
   const stale = view?.stale || (draft && draft.caseRevision !== revision);
+  const usable = view?.usable && !stale && !loadError;
   return (
     <section className="policy-panel" aria-label="AI meeting draft">
       <h3>AI meeting draft</h3>
       <p className="muted">
         AI prioritizes supplied facts and questions. Values and citations are
-        rendered from saved sources, not invented prose. Unapproved preparation
-        only—not recommendations, suitability decisions, or financial advice.
+        rendered from saved sources, not invented prose. Approval confirms
+        adviser source review only—not recommendations, suitability decisions,
+        or financial advice.
       </p>
       {(commandError || loadError) && (
         <p className="error" role="alert">
@@ -144,7 +258,9 @@ export default function BriefingPanel({
               <p role="status">
                 {stale
                   ? "Stale draft: case or policy sources changed. Generate a new draft."
-                  : "Draft saved—unapproved. Review every source before use."}
+                  : usable
+                    ? "Approved meeting briefing—source review recorded."
+                    : "Draft saved—unapproved or not verified current. Review every source before use."}
               </p>
               <h4>Prioritized facts</h4>
               <ol>
@@ -192,7 +308,41 @@ export default function BriefingPanel({
                   ))}
                 </ul>
               </details>
+              {!usable && (
+                <ApprovalForm
+                  key={`${draft.id}:${Boolean(stale)}`}
+                  disabled={disabled || Boolean(stale) || Boolean(loadError)}
+                  submitting={submitting}
+                  approve={approve}
+                />
+              )}
             </>
+          )}
+          {(view.approvals ?? []).length > 0 && (
+            <details>
+              <summary>Approval history (latest 10)</summary>
+              <ol>
+                {view.approvals.map((approval) => (
+                  <li key={approval.draftId}>
+                    {approval.status === "CURRENT" && stale
+                      ? "STALE"
+                      : approval.status}
+                    {" · "}
+                    {approval.approvedBy}
+                    {" · "}
+                    {new Date(approval.approvedAt).toLocaleString("en-FI")}
+                    <br />
+                    Draft: {approval.draftId}
+                    {approval.note && <p>{approval.note}</p>}
+                  </li>
+                ))}
+              </ol>
+              <p className="muted">
+                Stale or superseded approvals are historical evidence, not
+                authorization to use the current briefing. Approval does not
+                approve a financial product.
+              </p>
+            </details>
           )}
         </>
       )}

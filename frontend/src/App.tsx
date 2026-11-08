@@ -373,7 +373,7 @@ function App() {
       </a>
       <header>
         <div>
-          <p className="eyebrow">Adviser preparation • Step 3</p>
+          <p className="eyebrow">Adviser preparation • Step 4</p>
           <h1>Life &amp; Pension Workspace</h1>
         </div>
         {user && (
