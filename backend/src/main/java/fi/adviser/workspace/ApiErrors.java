@@ -24,7 +24,7 @@ public class ApiErrors {
     @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
     ResponseEntity<Map<String, String>> invalid(Exception error) {
         return ResponseEntity.badRequest().body(Map.of("message",
-                "Check the profile fields: alias is required; amounts must be non-negative with at most two decimals; age 18-100; dependants 0-20."));
+                "Check the submitted fields: profile values must satisfy their limits; policy requests require a current revision and a valid fictional fixture."));
     }
 
     @ExceptionHandler(Exception.class)
