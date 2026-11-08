@@ -12,6 +12,7 @@ import {
 import type { CaseDetail, CaseView, Profile, Status } from "./models";
 import "./App.css";
 import PolicyPanel from "./PolicyPanel";
+import BriefingPanel from "./BriefingPanel";
 
 function ProfileForm({
   profile,
@@ -372,7 +373,7 @@ function App() {
       </a>
       <header>
         <div>
-          <p className="eyebrow">Adviser preparation • Step 2</p>
+          <p className="eyebrow">Adviser preparation • Step 3</p>
           <h1>Life &amp; Pension Workspace</h1>
         </div>
         {user && (
@@ -499,7 +500,8 @@ function App() {
                   </p>
                   <p>
                     Simulated policy retrieval is available after selecting a
-                    case. AI briefings are not implemented yet.
+                    case. Grounded AI meeting drafts require explicit cloud
+                    provider configuration.
                   </p>
                 </div>
               ) : (
@@ -622,6 +624,12 @@ function App() {
                   )}
                   <PolicyPanel
                     key={selected.id}
+                    caseId={selected.id}
+                    revision={selected.revision}
+                    disabled={busy || editing || selected.status === "CLOSED"}
+                  />
+                  <BriefingPanel
+                    key={`${selected.id}:${selected.revision}`}
                     caseId={selected.id}
                     revision={selected.revision}
                     disabled={busy || editing || selected.status === "CLOSED"}
