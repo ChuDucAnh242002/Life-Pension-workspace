@@ -193,6 +193,30 @@ button:disabled {
   border-top: 1px solid #d2dde2;
   margin-top: 2rem;
 }
+.policy-panel {
+  border-top: 1px solid #d2dde2;
+  margin-top: 2rem;
+}
+.policy-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: end;
+  flex-wrap: wrap;
+}
+.policy-controls label {
+  margin-bottom: 0;
+}
+.policy-result {
+  margin-top: 1rem;
+}
+.policy-result li {
+  margin: 0.6rem 0;
+  overflow-wrap: anywhere;
+}
+.transport {
+  background: #edf7f3;
+  padding: 0.6rem;
+}
 .history ol {
   padding-left: 1.2rem;
 }

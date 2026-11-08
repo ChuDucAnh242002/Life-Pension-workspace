@@ -11,6 +11,7 @@ import {
 } from "./models";
 import type { CaseDetail, CaseView, Profile, Status } from "./models";
 import "./App.css";
+import PolicyPanel from "./PolicyPanel";
 
 function ProfileForm({
   profile,
@@ -371,7 +372,7 @@ function App() {
       </a>
       <header>
         <div>
-          <p className="eyebrow">Adviser preparation • Step 1</p>
+          <p className="eyebrow">Adviser preparation • Step 2</p>
           <h1>Life &amp; Pension Workspace</h1>
         </div>
         {user && (
@@ -497,8 +498,8 @@ function App() {
                     information, and track the meeting-preparation workflow.
                   </p>
                   <p>
-                    AI briefings and policy integration are planned for later
-                    steps—not implemented yet.
+                    Simulated policy retrieval is available after selecting a
+                    case. AI briefings are not implemented yet.
                   </p>
                 </div>
               ) : (
@@ -619,6 +620,12 @@ function App() {
                       </p>
                     </>
                   )}
+                  <PolicyPanel
+                    key={selected.id}
+                    caseId={selected.id}
+                    revision={selected.revision}
+                    disabled={busy || editing || selected.status === "CLOSED"}
+                  />
                   <section className="history">
                     <h3>Case history</h3>
                     <p className="muted">
