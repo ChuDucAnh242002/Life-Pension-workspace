@@ -104,6 +104,9 @@ assert.equal(
   "Smoke uses an isolated stack with AI disabled.",
 );
 assert.equal(briefing.draft, null);
+assert.equal(briefing.usable, false);
+assert.deepEqual(briefing.approvals, []);
+await call(`/api/cases/${created.id}/briefing/approved`, "GET", undefined, 409);
 await call(`/api/cases/${created.id}/briefing`, "POST", { revision: 3 }, 503);
 await call("/api/logout", "POST", undefined, 204);
 await call("/api/cases", "GET", undefined, 401);
