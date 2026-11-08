@@ -97,6 +97,14 @@ assert.equal(
   (await call(`/api/cases/${created.id}`)).caseData.profile.pensionContribution,
   null,
 );
+const briefing = await call(`/api/cases/${created.id}/briefing`);
+assert.equal(
+  briefing.enabled,
+  false,
+  "Smoke uses an isolated stack with AI disabled.",
+);
+assert.equal(briefing.draft, null);
+await call(`/api/cases/${created.id}/briefing`, "POST", { revision: 3 }, 503);
 await call("/api/logout", "POST", undefined, 204);
 await call("/api/cases", "GET", undefined, 401);
 console.log(
