@@ -1,0 +1,38 @@
+name: life-pension-oracle
+services:
+  app:
+    build: .
+    image: life-pension-workspace:local
+    ports:
+      - "127.0.0.1:8090:8080"
+    environment:
+      DATABASE_URL: jdbc:oracle:thin:@oracle:1521/FREEPDB1
+      DATABASE_USER: workspace
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?Set the application database password}
+      ADVISER_USER: ${ADVISER_USER:-adviser}
+      ADVISER_PASSWORD: ${ADVISER_PASSWORD:?Set an adviser password of 12-72 characters}
+    depends_on:
+      oracle:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+      start_period: 60s
+  oracle:
+    image: gvenzl/oracle-free:23.26.1-slim
+    environment:
+      ORACLE_PASSWORD: ${ORACLE_ADMIN_PASSWORD:?Review Oracle terms and set a local admin password}
+      APP_USER: workspace
+      APP_USER_PASSWORD: ${DATABASE_PASSWORD:?Set the application database password}
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 60s
+volumes:
+  oracle-data:
