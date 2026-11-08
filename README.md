@@ -4,7 +4,7 @@ A small workspace for preparing pension and protection conversations: record
 customer-declared facts, identify missing information, and track what changed.
 **Fictional profiles only. Independent of Nordea; not financial advice.**
 
-## Implemented: case workspace and simulated policy requests
+## Implemented: cases, policy requests, and grounded meeting drafts
 
 - One adviser login with server-side sessions and CSRF-protected writes.
 - Three synthetic cases: sole trader, employee, and career change.
@@ -20,8 +20,8 @@ Step 2 adds correlated policy request/reply behind a transport port. The default
 demo uses an **in-process queue, not IBM MQ**. An optional IBM MQ adapter and container
 setup are included; live request/reply was verified with IBM MQ Developer 10.0.1.0
 and the H2 demo database after user deployment.
-**AI briefings are not implemented.** Case status represents meeting preparation,
-not product suitability or approval.
+Step 3 adds optional cloud AI meeting drafts, disabled by default. Case status
+represents meeting preparation, not product suitability or briefing approval.
 
 Select a case's **Fictional policy fixture**, then **Request simulated policy**.
 The response appears separately from the customer-declared profile:
@@ -95,6 +95,9 @@ flowchart LR
     Policy --> Port["PolicyPort: demo / IBM MQ"]
     Port --> Simulator["Fictional policy simulator"]
     Policy --> DB
+    API --> Briefing["Grounded draft / citation validation"]
+    Briefing --> Model["BriefingModel: Hugging Face / Azure / Bedrock"]
+    Briefing --> DB
 ```
 
 A modular monolith using Java 21, JDBC, and Flyway. Profile/status writes compare the
@@ -155,6 +158,149 @@ logs a sanitized warning. There is no automatic dead-letter/skip policy. An oper
 must investigate retained poison messages. The requesting case eventually times out.
 Readiness checks the app/database, not MQ; the policy request state exposes MQ lag/failure.
 
+### Optional AI drafts
+
+AI selects and orders supplied fact IDs and meeting-question IDs. The server renders
+**exact saved source values**, not free-form model prose. Unknown stays distinct
+from zero; fictional policy facts remain separate from declarations. This constrained
+first version prioritizes preparation rather than generating advice.
+
+Only allowlisted numeric/employment facts and the latest current completed fictional
+policy snapshot cross the model boundary. Alias, meeting notes, history, adviser
+identity, and credentials are excluded from the prompt. Unknown, duplicate, empty,
+or excessive citations are rejected; provider errors never become a successful
+demo fallback. Drafts persist with sources, actor, model/provider, and prompt version.
+Changed case revisions or latest policy request states make them stale. Sources that
+change during inference cause a conflict and no draft is saved.
+
+Select **one backend per deployment**: Hugging Face, Azure OpenAI in Foundry, or AWS
+Bedrock. All use the same `BriefingModel` port, prompt, citation validation, and draft
+storage; there is no cross-provider fallback. `AI_BACKEND` defaults to `huggingface`
+for existing configurations; unsupported values fail application startup.
+No vector database, agent framework, or document ingestion is needed for the current
+small structured context. Human approval is Step 4.
+
+#### Hugging Face
+
+Review [HF pricing](https://huggingface.co/docs/inference-providers/pricing),
+[provider privacy terms](https://huggingface.co/docs/inference-providers/security),
+and [structured-output support](https://huggingface.co/docs/inference-providers/guides/structured-output).
+Choose an explicit model/provider pair supporting JSON schema in the
+[HF Playground](https://huggingface.co/playground). Availability varies; automatic
+model/provider routing is not used. Free accounts currently require purchased credits.
+Never send real customer information, and never paste an API token into chat.
+
+Prepare `.env.ai` with `HF_PROVIDER` and `HF_MODEL`, and create an inference-authorized
+token privately in Hugging Face. Save it locally:
+
+```sh
+mkdir -p secrets
+chmod 700 secrets
+read -r -s -p "Hugging Face inference token: " hf_token
+printf '\n'
+printf '%s' "$hf_token" > secrets/hf-token
+unset hf_token
+chmod 644 secrets/hf-token
+chmod 600 .env.ai
+APP_PORT=8093 docker compose --env-file .env.ai -p life-pension-ai \
+  -f compose.demo.yaml -f compose.ai.yaml up --build -d --wait
+```
+
+The private parent directory protects the host file; the non-root app must be able
+to read the mounted secret. Open **http://localhost:8093** with the demo login.
+**Generate AI draft** makes one external, potentially paid call; no automatic retries.
+Timeout is 30 seconds; truncated, oversized, or invalid JSON responses are rejected.
+Requests use the unified HF chat router with `model:provider` to select the explicit
+backend. HTTP 402 means inference credits are required; 401/403 means authorization
+failed; 400/404/422 indicates request/model compatibility; 429 indicates a rate limit.
+Provider bodies are not displayed or logged.
+The server validates IDs but cannot guarantee the model's prioritization is useful.
+Use the same command prefix with `down` to stop and preserve data.
+
+#### Azure OpenAI in Foundry
+
+Use an **Azure OpenAI deployment in Foundry**, not a partner/community model endpoint.
+Deploy a model supporting [structured outputs](https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/structured-outputs).
+Create a private `.env.azure` containing:
+
+```dotenv
+AZURE_OPENAI_ENDPOINT=https://YOUR-RESOURCE.openai.azure.com
+AZURE_OPENAI_DEPLOYMENT=YOUR-DEPLOYMENT-NAME
+```
+
+The endpoint is the HTTPS resource root, not a full inference URL. Public-cloud
+`*.openai.azure.com` and `*.services.ai.azure.com` roots are supported. The adapter
+calls `/openai/v1/chat/completions` with the **deployment name**, not the model
+catalog ID, and authenticates using `api-key`.
+Save your resource API key privately in `secrets/azure-openai-key`, using the same
+hidden `read`/file procedure above. Keep `secrets` mode 700, the key file 644 for
+the non-root container, and `.env.azure` mode 600. Never paste or commit the key.
+
+```sh
+APP_PORT=8095 docker compose --env-file .env.azure -p life-pension-azure \
+  -f compose.demo.yaml -f compose.ai-azure.yaml up --build -d --wait
+```
+
+Open **http://localhost:8095**. This version uses API-key authentication, not Entra ID,
+and does not provision Azure resources. Regional model availability, quotas, charges,
+and data-processing terms must be checked in your Azure subscription.
+
+#### AWS Bedrock
+
+Choose a model/inference profile that supports **Converse JSON-schema structured
+outputs** in your region; Converse support alone is insufficient. Review
+[structured-output support](https://docs.aws.amazon.com/bedrock/latest/userguide/structured-output.html)
+and model access requirements. Create a private `.env.bedrock`:
+
+```dotenv
+AWS_REGION=YOUR-REGION
+BEDROCK_MODEL_ID=YOUR-MODEL-OR-INFERENCE-PROFILE-ID
+AWS_PROFILE=default
+```
+
+For the local Compose lab, privately save a dedicated least-privilege AWS shared
+credentials profile in `secrets/aws-credentials` (INI format). Prefer temporary
+credentials with a session token rather than long-lived keys:
+
+```ini
+[default]
+aws_access_key_id=YOUR-ACCESS-KEY
+aws_secret_access_key=YOUR-SECRET-KEY
+aws_session_token=YOUR-SESSION-TOKEN
+```
+
+Never use root credentials or paste credentials into chat. Omit the session-token
+line only for credentials that genuinely have no session token. Protect the parent
+directory and file as above; set `.env.bedrock` mode 600. Temporary credentials must
+be refreshed privately when they expire. Allow `bedrock:InvokeModel` on the intended
+model/inference-profile resources; cross-region profiles may require permissions
+for their destination model resources.
+
+```sh
+APP_PORT=8096 docker compose --env-file .env.bedrock -p life-pension-bedrock \
+  -f compose.demo.yaml -f compose.ai-bedrock.yaml up --build -d --wait
+```
+
+Open **http://localhost:8096**. The adapter uses the AWS SDK default credential chain,
+SigV4 signing, and native Converse `outputConfig.textFormat`. The local overlay mounts
+only the selected shared-credentials file and disables EC2 metadata discovery; it
+does not mount your whole AWS directory or expose keys in environment variables.
+For managed workloads, use an appropriate IAM role through the SDK chain rather
+than this file-based lab overlay. SSO profiles need their config/cache available;
+the local overlay instead expects exported temporary credentials in INI format.
+No cloud resources are provisioned.
+
+Bedrock can spend about 90 seconds compiling a new schema; its per-attempt timeout
+is 125 seconds and overall timeout is 130 seconds. Azure/HF use 30 seconds. Output
+budgets are 500 tokens; truncated responses are rejected. All backends make no
+automatic inference retries. No backend can guarantee useful prioritization.
+
+Use only one AI overlay; each can be combined with the MQ overlay and an env file
+containing both configurations. Keep a separate project so you do not accidentally
+recreate an existing workspace. Stop with the same prefix followed by `down`, without
+`--volumes`, to preserve data. Successful cloud generation and Oracle V4 remain
+unverified; local mock tests are not evidence of cloud deployment compatibility.
+
 ## Test
 
 Step 1 verified: **11 backend tests, 3 frontend unit tests, and 5 browser tests**, plus live
@@ -175,6 +321,28 @@ was not tested; no containers were restarted or existing volumes removed.
 The tested deployment used an unversioned image reference; pin a reviewed version
 or image digest before recreating it. MQ reported plaintext communication, acceptable
 only for this isolated local lab; production requires TLS and hardened configuration.
+
+Step 3 verified totals: **44 backend tests, 3 frontend unit tests, 12 browser tests,
+and 4 Compose configuration checks**. Provider HTTP tests use a localhost mock, and
+enabled-draft browser tests mock the API. They verify strict JSON parsing, citations,
+source privacy, saved snapshots, revision/policy race rejection, and visible errors.
+An isolated H2 deployment passed migrations V1–V4 and the smoke check with AI disabled.
+No external inference request was made; live model quality and provider compatibility
+remain unverified.
+
+Subsequent authorized synthetic diagnostics found and corrected the DeepInfra
+provider-specific route rejection: the unified router accepted routing but returned
+HTTP 402 for missing prepaid credits. No successful live generation or model-quality
+verification has occurred.
+
+With Azure and Bedrock adapters, current totals are **59 backend tests, 3 frontend
+unit tests, 14 browser tests, and 8 Compose checks**. Local HTTP tests verify Azure
+deployment/key handling and real SDK Bedrock request serialization/SigV4 signing,
+error handling, no automatic retries, and shared schema behavior. Backend selection
+tests verify inactive providers need no secrets; browser tests mock Azure/Bedrock
+draft responses. The isolated H2 smoke passed. No Azure/AWS resources were created
+or paid requests made; live credentials, model access, quotas, and compatibility
+still require explicit cloud validation.
 
 ```sh
 cd backend
@@ -209,4 +377,4 @@ Do not enter real customer, health, policy, or financial information.
 Production would require TLS, managed identity, retention/access controls, backups,
 and legal/regulatory review.
 
-Next: grounded AI briefings → human approval and evaluation → Kubernetes deployment.
+Next: human approval and evaluation → Kubernetes deployment.
