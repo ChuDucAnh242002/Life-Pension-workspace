@@ -26,6 +26,7 @@ jobs:
         working-directory: frontend
       - run: docker compose --env-file /dev/null -f compose.demo.yaml up --build -d --wait
       - run: node scripts/smoke.mjs
+      - run: node --test scripts/*.test.mjs
       - run: npx playwright install --with-deps chromium && npm run test:e2e
         working-directory: frontend
       - uses: actions/upload-artifact@v4
