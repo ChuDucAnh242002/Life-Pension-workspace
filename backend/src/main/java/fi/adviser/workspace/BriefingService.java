@@ -45,9 +45,70 @@ public class BriefingService {
             var saved = jdbc.query("SELECT snapshot FROM briefing_draft WHERE case_id=? ORDER BY draft_order DESC FETCH FIRST 1 ROWS ONLY",
                     (rs, index) -> decode(rs.getString("snapshot")), caseId);
             Draft draft = saved.isEmpty() ? null : saved.getFirst();
+            var approvals = approvals(caseId, context, draft);
             return new View(model.enabled(), model.provider(), model.model(),
-                    draft != null && !sameBasis(draft, context), draft);
+                    draft != null && !sameBasis(draft, context), draft, approvals,
+                    approvals.stream().anyMatch(a -> a.status() == ApprovalStatus.CURRENT));
         });
+    }
+
+    public Approval approve(long caseId, ApprovalInput input, String actor) {
+        if (!input.reviewedSources()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Confirm that you reviewed every source before approving.");
+        }
+        return transaction.execute(status -> {
+            var basis = context(caseId, false);
+            var data = cases.detail(caseId).caseData();
+            if (data.status() == CaseModels.Status.CLOSED) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Reopen the case before approving a briefing.");
+            }
+            var draft = latest(caseId);
+            if (draft == null || !draft.id().equals(input.draftId().toString())
+                    || basis.caseRevision() != input.revision() || !sameBasis(draft, basis)) throw changed();
+            var existing = approvals(caseId, basis, draft).stream()
+                    .filter(a -> a.draftId().equals(draft.id())).findFirst();
+            if (existing.isPresent()) return existing.get();
+            String note = input.note() == null || input.note().isBlank() ? null : input.note().strip();
+            String time = clock.instant().toString();
+            jdbc.update("""
+                    INSERT INTO briefing_approval(draft_id,approved_at,approved_by,review_note,reviewed_sources)
+                    VALUES (?,?,?,?,1)
+                    """, draft.id(), time, actor, note);
+            return new Approval(draft.id(), time, actor, note, ApprovalStatus.CURRENT);
+        });
+    }
+
+    public Draft approved(long caseId) {
+        return transaction.execute(status -> {
+            var basis = context(caseId, false);
+            var draft = latest(caseId);
+            if (draft == null || !sameBasis(draft, basis)
+                    || approvals(caseId, basis, draft).stream().noneMatch(a -> a.status() == ApprovalStatus.CURRENT)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "No current approved briefing. Review and approve the latest fresh draft before use.");
+            }
+            return draft;
+        });
+    }
+
+    private Draft latest(long caseId) {
+        return jdbc.query("""
+                SELECT snapshot FROM briefing_draft WHERE case_id=?
+                ORDER BY draft_order DESC FETCH FIRST 1 ROWS ONLY
+                """, (rs, index) -> decode(rs.getString("snapshot")), caseId).stream().findFirst().orElse(null);
+    }
+
+    private List<Approval> approvals(long caseId, Context context, Draft latest) {
+        return jdbc.query("""
+                SELECT a.*,d.snapshot FROM briefing_approval a JOIN briefing_draft d ON d.id=a.draft_id
+                WHERE d.case_id=? ORDER BY d.draft_order DESC FETCH FIRST 10 ROWS ONLY
+                """, (rs, index) -> {
+            var draft = decode(rs.getString("snapshot"));
+            var state = latest == null || !draft.id().equals(latest.id()) ? ApprovalStatus.SUPERSEDED
+                    : sameBasis(draft, context) ? ApprovalStatus.CURRENT : ApprovalStatus.STALE;
+            return new Approval(draft.id(), rs.getString("approved_at"), rs.getString("approved_by"),
+                    rs.getString("review_note"), state);
+        }, caseId);
     }
 
     public Draft generate(long caseId, Input input, String actor) {

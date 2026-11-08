@@ -1,7 +1,10 @@
 package fi.adviser.workspace;
 
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
+import java.util.UUID;
 
 public final class BriefingModels {
     private BriefingModels() {}
@@ -14,5 +17,11 @@ public final class BriefingModels {
     public record Draft(String id, long caseRevision, String policyBasis, String createdAt, String createdBy,
                         String provider, String model, String promptVersion, List<Source> summary,
                         List<Question> questions, List<Source> sources) {}
-    public record View(boolean enabled, String provider, String model, boolean stale, Draft draft) {}
+    public record ApprovalInput(@NotNull UUID draftId, @Min(1) long revision,
+                                boolean reviewedSources, @Size(max = 1000) String note) {}
+    public enum ApprovalStatus { CURRENT, STALE, SUPERSEDED }
+    public record Approval(String draftId, String approvedAt, String approvedBy, String note,
+                           ApprovalStatus status) {}
+    public record View(boolean enabled, String provider, String model, boolean stale, Draft draft,
+                       List<Approval> approvals, boolean usable) {}
 }

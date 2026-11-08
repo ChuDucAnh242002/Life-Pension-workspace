@@ -18,4 +18,10 @@ public class BriefingController {
     public Draft generate(@PathVariable long caseId, @Valid @RequestBody Input input, Principal actor) {
         return service.generate(caseId, input, actor.getName());
     }
+    @PostMapping("/approval")
+    public Approval approve(@PathVariable long caseId, @Valid @RequestBody ApprovalInput input, Principal actor) {
+        return service.approve(caseId, input, actor.getName());
+    }
+    @GetMapping("/approved")
+    public Draft approved(@PathVariable long caseId) { return service.approved(caseId); }
 }
