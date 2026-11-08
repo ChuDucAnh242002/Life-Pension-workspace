@@ -20,8 +20,9 @@ Step 2 adds correlated policy request/reply behind a transport port. The default
 demo uses an **in-process queue, not IBM MQ**. An optional IBM MQ adapter and container
 setup are included; live request/reply was verified with IBM MQ Developer 10.0.1.0
 and the H2 demo database after user deployment.
-Step 3 adds optional cloud AI meeting drafts, disabled by default. Case status
-represents meeting preparation, not product suitability or briefing approval.
+Step 3 adds optional cloud AI meeting drafts, disabled by default. Step 4 adds
+explicit adviser source review and approval. Case status represents meeting
+preparation, not product suitability or briefing approval.
 
 Select a case's **Fictional policy fixture**, then **Request simulated policy**.
 The response appears separately from the customer-declared profile:
@@ -178,7 +179,27 @@ Bedrock. All use the same `BriefingModel` port, prompt, citation validation, and
 storage; there is no cross-provider fallback. `AI_BACKEND` defaults to `huggingface`
 for existing configurations; unsupported values fail application startup.
 No vector database, agent framework, or document ingestion is needed for the current
-small structured context. Human approval is Step 4.
+small structured context.
+
+#### Adviser approval
+
+Open the saved source citations and review each fact and question. Check **I reviewed
+every source**, optionally add a review note (up to 1,000 characters), then select
+**Approve meeting briefing**. This records adviser/time/note against the exact draft.
+It does not change case facts/history, approve a product, or imply suitability.
+Approval of an already-saved draft works even when inference is disabled.
+
+Only the latest draft with current case/policy sources can be approved. A changed
+case or latest policy-request state makes approval stale; generating a newer draft
+supersedes previous approval even when the facts are unchanged. History remains
+visible (latest 10 approvals); records are not deleted or overwritten. Duplicate
+approval is idempotent. A new draft requires a new source-review confirmation.
+Closed cases must be reopened before approval.
+
+`GET /api/cases/{caseId}/briefing/approved` is the guarded current-use endpoint:
+it returns only the latest fresh approved draft, otherwise HTTP 409. It rechecks
+database sources on each call; clients must not treat a previously fetched copy as
+permanently valid. Approval history is not tamper-proof against DB administrators.
 
 #### Hugging Face
 
@@ -298,8 +319,9 @@ automatic inference retries. No backend can guarantee useful prioritization.
 Use only one AI overlay; each can be combined with the MQ overlay and an env file
 containing both configurations. Keep a separate project so you do not accidentally
 recreate an existing workspace. Stop with the same prefix followed by `down`, without
-`--volumes`, to preserve data. Successful cloud generation and Oracle V4 remain
-unverified; local mock tests are not evidence of cloud deployment compatibility.
+`--volumes`, to preserve data. Azure `gpt-4.1-mini` generation has been live-verified
+with H2; Bedrock, successful HF generation, and Oracle V4 remain unverified.
+Local mock tests alone are not evidence of cloud deployment compatibility.
 
 ## Test
 
@@ -344,6 +366,24 @@ draft responses. The isolated H2 smoke passed. No Azure/AWS resources were creat
 or paid requests made; live credentials, model access, quotas, and compatibility
 still require explicit cloud validation.
 
+Step 4 verified totals: **67 backend tests, 3 frontend unit tests, 17 browser tests,
+and 8 Compose checks**. Approval tests cover explicit confirmation, immutable
+actor/time/note, duplicate/concurrent approval, stale facts and policy replies,
+superseded drafts, cross-case/revision checks, closed cases, and authenticated/CSRF
+endpoints. Browser approval tests mock saved draft/approval responses; an isolated
+AI-disabled H2 deployment passed V1–V5 and the guarded-use smoke check.
+Oracle V5 and approval persistence across a full application restart remain
+unverified. Initial automated Step 4 checks required no cloud inference.
+
+Subsequently, one authorized fictional end-to-end test on the user-deployed Azure
+`gpt-4.1-mini` lab generated a real draft with seven exact cited facts and three
+cited questions. Unknown pension remained distinct from zero cover; case facts and
+history were unchanged by generation/approval. Explicit review, saved approval,
+duplicate approval, and the approved-use endpoint passed. Editing only the new
+verification case retained stale approval history while blocking current use and
+reapproval. No restarts occurred; existing cases were untouched. This verifies
+that deployment's workflow, not general model quality or financial suitability.
+
 ```sh
 cd backend
 mvn -B verify                 # Requires Java 21 and Maven.
@@ -377,4 +417,4 @@ Do not enter real customer, health, policy, or financial information.
 Production would require TLS, managed identity, retention/access controls, backups,
 and legal/regulatory review.
 
-Next: human approval and evaluation → Kubernetes deployment.
+Next: evaluation and reliability → Kubernetes deployment.
