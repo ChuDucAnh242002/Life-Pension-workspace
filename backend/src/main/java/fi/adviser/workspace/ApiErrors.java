@@ -24,7 +24,7 @@ public class ApiErrors {
     @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
     ResponseEntity<Map<String, String>> invalid(Exception error) {
         return ResponseEntity.badRequest().body(Map.of("message",
-                "Check the submitted fields: profile values must satisfy their limits; policy requests require a current revision and a valid fictional fixture."));
+                "Check the submitted fields: profile values must satisfy their limits; policy and briefing requests require a current revision; policy requests also require a valid fictional fixture."));
     }
 
     @ExceptionHandler(Exception.class)
