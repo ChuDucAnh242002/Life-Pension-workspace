@@ -24,6 +24,19 @@ management:
 app:
   adviser-user: ${ADVISER_USER:adviser}
   adviser-password: ${ADVISER_PASSWORD}
+  ai:
+    enabled: ${AI_ENABLED:false}
+    backend: ${AI_BACKEND:huggingface}
+    provider: ${HF_PROVIDER:}
+    model: ${HF_MODEL:}
+    token-file: ${HF_TOKEN_FILE:}
+    azure:
+      endpoint: ${AZURE_OPENAI_ENDPOINT:}
+      deployment: ${AZURE_OPENAI_DEPLOYMENT:}
+      key-file: ${AZURE_OPENAI_KEY_FILE:}
+    bedrock:
+      region: ${AWS_REGION:}
+      model: ${BEDROCK_MODEL_ID:}
   policy:
     transport: ${POLICY_TRANSPORT:demo}
     simulator: ${POLICY_SIMULATOR:true}
