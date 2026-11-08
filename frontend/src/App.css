@@ -1,0 +1,252 @@
+header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.6rem 4%;
+  background: #132d3f;
+  color: white;
+}
+h1 {
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  margin: 0.2rem 0;
+}
+h2 {
+  font-size: 1.35rem;
+  margin-top: 0;
+}
+h3 {
+  margin: 1.7rem 0 0.5rem;
+}
+.eyebrow {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 0.5rem;
+}
+.banner {
+  background: #fff2ce;
+  padding: 0.8rem 4%;
+  color: #5d4200;
+  font-size: 0.9rem;
+}
+main {
+  max-width: 1450px;
+  margin: 2rem auto;
+  padding: 0 4%;
+  min-height: 65vh;
+}
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(230px, 310px) minmax(0, 1fr);
+  gap: 2rem;
+}
+.case-panel,
+.login {
+  background: white;
+  border: 1px solid #d2dde2;
+  border-radius: 12px;
+  padding: 1.8rem;
+  min-width: 0;
+}
+.login {
+  max-width: 420px;
+  margin: 3rem auto;
+}
+.list-heading,
+.case-heading,
+.actions,
+.user {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.actions {
+  justify-content: flex-start;
+  margin-top: 1rem;
+}
+.list-heading h2 {
+  margin: 0;
+}
+.list-heading h2 span {
+  color: #52616d;
+  font-size: 1rem;
+}
+.case-list {
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.8rem;
+}
+.case-list button {
+  width: 100%;
+  text-align: left;
+  background: white;
+  color: #203a4b;
+  border: 1px solid #c9d7de;
+  padding: 1rem;
+  display: grid;
+  gap: 0.4rem;
+}
+.case-list button.selected {
+  border: 2px solid #16705b;
+  background: #edf7f3;
+}
+.case-list span {
+  font-size: 0.86rem;
+}
+.badge {
+  background: #e6f3ef;
+  color: #145842;
+  padding: 0.3rem 0.6rem;
+  border-radius: 5px;
+  font-size: 0.85rem;
+}
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.facts div {
+  padding: 1rem;
+  background: #f3f7f9;
+  border-radius: 8px;
+}
+dt,
+.muted {
+  color: #52616d;
+  font-size: 0.9rem;
+}
+dd {
+  margin: 0.5rem 0 0;
+  font-size: 1.12rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.notes {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+label {
+  display: grid;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.65rem;
+  border: 1px solid #9aadb9;
+  border-radius: 5px;
+  background: white;
+  color: #162e40;
+  font: inherit;
+}
+fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+button {
+  border: 1px solid #17634f;
+  border-radius: 6px;
+  background: #17634f;
+  color: white;
+  padding: 0.65rem 0.9rem;
+  cursor: pointer;
+  font: inherit;
+}
+button.secondary {
+  background: white;
+  color: #174936;
+}
+button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.error {
+  background: #fff0ef;
+  color: #8a2118;
+  border: 1px solid #d89b95;
+  padding: 1rem;
+  border-radius: 6px;
+}
+.error button {
+  margin-left: 1rem;
+}
+.notice {
+  background: #e5f4ec;
+  padding: 1rem;
+  color: #17533b;
+}
+.history {
+  border-top: 1px solid #d2dde2;
+  margin-top: 2rem;
+}
+.history ol {
+  padding-left: 1.2rem;
+}
+.history li {
+  padding: 0.6rem 0;
+}
+summary {
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+footer {
+  text-align: center;
+  padding: 1rem;
+  color: #52616d;
+  font-size: 0.85rem;
+}
+:focus-visible {
+  outline: 3px solid #b27000;
+  outline-offset: 3px;
+}
+.skip {
+  position: absolute;
+  left: 1rem;
+  top: -5rem;
+  background: white;
+  padding: 0.8rem;
+  z-index: 2;
+}
+.skip:focus {
+  top: 1rem;
+}
+.empty {
+  padding: 2rem 0;
+}
+@media (max-width: 800px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+  .facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 450px) {
+  .facts,
+  .fields {
+    grid-template-columns: 1fr;
+  }
+  header {
+    flex-wrap: wrap;
+  }
+  .case-panel {
+    padding: 1rem;
+  }
+  main {
+    padding: 0 0.8rem;
+  }
+}
