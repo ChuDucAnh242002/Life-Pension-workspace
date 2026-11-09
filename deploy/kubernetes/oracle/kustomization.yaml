@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: life-pension-oracle
+resources:
+  - ../demo
+  - oracle.yaml
+patches:
+  - target:
+      kind: Namespace
+      name: life-pension-demo
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: life-pension-oracle
+  - path: app-patch.yaml
