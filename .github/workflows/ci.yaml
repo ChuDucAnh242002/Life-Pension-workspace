@@ -20,6 +20,9 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: v1.30.14
       - run: mvn -B verify
         working-directory: backend
       - uses: actions/upload-artifact@v4
