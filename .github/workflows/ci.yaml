@@ -22,6 +22,12 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: mvn -B verify
         working-directory: backend
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: offline-briefing-evaluation
+          path: backend/target/briefing-evaluation-offline.json
+          if-no-files-found: warn
       - run: npm ci && npm run lint && npm test && npm run build
         working-directory: frontend
       - run: docker compose --env-file /dev/null -f compose.demo.yaml up --build -d --wait

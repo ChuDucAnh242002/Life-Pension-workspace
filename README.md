@@ -372,8 +372,8 @@ actor/time/note, duplicate/concurrent approval, stale facts and policy replies,
 superseded drafts, cross-case/revision checks, closed cases, and authenticated/CSRF
 endpoints. Browser approval tests mock saved draft/approval responses; an isolated
 AI-disabled H2 deployment passed V1–V5 and the guarded-use smoke check.
-Oracle V5 and approval persistence across a full application restart remain
-unverified. Initial automated Step 4 checks required no cloud inference.
+Oracle V5 remained unverified; initial automated Step 4 checks did not exercise
+full application restart persistence or require cloud inference.
 
 Subsequently, one authorized fictional end-to-end test on the user-deployed Azure
 `gpt-4.1-mini` lab generated a real draft with seven exact cited facts and three
@@ -383,6 +383,55 @@ duplicate approval, and the approved-use endpoint passed. Editing only the new
 verification case retained stale approval history while blocking current use and
 reapproval. No restarts occurred; existing cases were untouched. This verifies
 that deployment's workflow, not general model quality or financial suitability.
+
+### Evaluation and reliability (Step 5)
+
+Normal `mvn -B verify` runs a six-example synthetic corpus **without cloud calls**:
+unknown/zero pension and cover, all missing facts, declared versus fictional policy
+values, missing fictional policy cover, and excluded free-text prompt injection.
+The offline adapter selects supplied IDs deterministically; this checks the
+application contract, **not real AI quality**. Adversarial IDs are rejected, and
+a valid but unhelpful selection fails the coverage rubric.
+
+The generated `backend/target/briefing-evaluation-offline.json` records per-example
+exact citations, exact fact values/origins, required-fact recall, required-question recall, and text-exclusion
+checks. The pass threshold is **100% on each required check for all six examples**.
+These expectations are meeting-preparation test fixtures, not suitability criteria.
+CI uploads this report. Generated reports contain synthetic example names/scores,
+not case profiles, notes, API keys, or model reasoning.
+
+Reliability tests close and reopen the entire application context twice against a
+temporary file-backed H2 database, checking exact case/history, policy snapshot,
+draft, and approval preservation. Stale approval evidence also survives restart.
+Concurrent checks verify editing is not blocked by external inference and obsolete
+responses cannot replace approval; approval racing a newer draft cannot authorize
+the superseded draft. These are H2 tests, not Oracle/MQ-server restart certification.
+
+**Optional paid model evaluation:** configure one provider as above, then explicitly
+authorize up to **six synthetic inference calls**:
+
+```sh
+node scripts/evaluate-ai.mjs --backend=azure --allow-paid-synthetic
+# Alternatives: --backend=bedrock or --backend=huggingface
+```
+
+The command uses the corresponding private env/secret file and a disposable
+in-memory H2 test database inside a Maven container. It does not connect to or modify
+your deployed workspace. It runs no inference retries, stops on provider/validation
+failure, and fails if required facts/questions are omitted even when JSON is valid.
+The Maven live profile also requires explicit paid-synthetic consent; ordinary
+tests/CI never enable it. Results are written to
+`backend/target/briefing-evaluation-live.json`, with incomplete runs marked failed.
+Docker-generated build files may be root-owned. Keep reports out of Git.
+Costs depend on provider/model and billed tokens; six calls are an upper bound,
+not a spending limit. No paid evaluation was executed during implementation.
+
+Step 5 verified: **74 backend tests and 10 CLI/Compose checks passed**. All six
+offline corpus examples met the exact-value, provenance, citation, and coverage
+thresholds. The live Maven profile was also checked without consent and correctly
+failed before inference. The previous 17 browser/3 frontend tests remain the Step 4
+evidence; Step 5 changes no UI or production workflow behavior. Oracle and live
+MQ-server restart recovery remain unverified.
 
 ```sh
 cd backend
@@ -417,4 +466,4 @@ Do not enter real customer, health, policy, or financial information.
 Production would require TLS, managed identity, retention/access controls, backups,
 and legal/regulatory review.
 
-Next: evaluation and reliability → Kubernetes deployment.
+Next: Kubernetes deployment.
