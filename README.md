@@ -466,4 +466,10 @@ Do not enter real customer, health, policy, or financial information.
 Production would require TLS, managed identity, retention/access controls, backups,
 and legal/regulatory review.
 
-Next: Kubernetes deployment.
+## Kubernetes and presentation (Step 6)
+
+See the [Kubernetes lab guide](deploy/kubernetes/README.md) for a persistent,
+single-replica H2 demo, localhost access, safe stop/resume, and a five-minute
+architecture walkthrough. Oracle and IBM MQ manifests are prepared separately;
+they require private secrets and explicit licence review and are not started by
+the default demo. Cloud inference remains disabled unless explicitly configured.
