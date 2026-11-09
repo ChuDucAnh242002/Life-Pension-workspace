@@ -20,9 +20,3 @@ spec:
       volumes:
         - name: data
           $patch: delete
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: workspace-data
-$patch: delete

@@ -13,3 +13,4 @@ patches:
         path: /metadata/name
         value: life-pension-oracle
   - path: app-patch.yaml
+  - path: remove-h2-pvc.yaml

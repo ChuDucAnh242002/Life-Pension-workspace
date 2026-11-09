@@ -8,7 +8,9 @@ cloud resources, secrets, Ingress, or public ports are provisioned automatically
 ## Persistent demo
 
 Requires kubectl/Kustomize, a reachable cluster with a default dynamic storage class,
-and sufficient node capacity. Check the target before applying anything:
+and sufficient node capacity. CI renders all overlays using kubectl 1.30.14;
+keep each strategic-merge patch file to one YAML document for compatibility.
+Check the target before applying anything:
 
 ```sh
 kubectl config current-context
