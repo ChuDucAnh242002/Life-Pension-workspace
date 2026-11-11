@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mq
+spec:
+  clusterIP: None
+  selector:
+    app: mq
+  ports:
+    - port: 1414
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mq
+spec:
+  serviceName: mq
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mq
+  template:
+    metadata:
+      labels:
+        app: mq
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: mq
+          image: ibm-mq-image-review-required:do-not-run
+          env:
+            - name: LICENSE
+              valueFrom:
+                secretKeyRef:
+                  name: mq-license
+                  key: acceptance
+            - name: MQ_QMGR_NAME
+              value: QM1
+            - name: MQ_DEV
+              value: "true"
+            - name: MQ_ENABLE_EMBEDDED_WEB_SERVER
+              value: "false"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          startupProbe:
+            exec:
+              command: [chkmqready]
+            periodSeconds: 10
+            failureThreshold: 60
+          readinessProbe:
+            exec:
+              command: [chkmqready]
+            periodSeconds: 10
+          volumeMounts:
+            - name: mq-data
+              mountPath: /mnt/mqm
+            - name: mq-password
+              mountPath: /run/secrets
+              readOnly: true
+            - name: mqsc
+              mountPath: /etc/mqm/20-policy.mqsc
+              subPath: 20-policy.mqsc
+              readOnly: true
+      volumes:
+        - name: mq-password
+          secret:
+            secretName: mq-app
+            items:
+              - key: password
+                path: mqAppPassword
+        - name: mqsc
+          configMap:
+            name: policy-mqsc
+  volumeClaimTemplates:
+    - metadata:
+        name: mq-data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 2Gi

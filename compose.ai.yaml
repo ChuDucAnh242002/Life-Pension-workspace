@@ -1,0 +1,13 @@
+services:
+  app:
+    environment:
+      AI_ENABLED: "true"
+      AI_BACKEND: huggingface
+      HF_PROVIDER: ${HF_PROVIDER:?Select an explicit Hugging Face inference provider}
+      HF_MODEL: ${HF_MODEL:?Select a model supporting structured outputs on that provider}
+      HF_TOKEN_FILE: /run/secrets/hfToken
+    secrets:
+      - hfToken
+secrets:
+  hfToken:
+    file: ./secrets/hf-token

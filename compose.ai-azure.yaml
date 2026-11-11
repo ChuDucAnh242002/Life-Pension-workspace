@@ -1,0 +1,13 @@
+services:
+  app:
+    environment:
+      AI_ENABLED: "true"
+      AI_BACKEND: azure
+      AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT:?Set your Azure OpenAI resource root endpoint}
+      AZURE_OPENAI_DEPLOYMENT: ${AZURE_OPENAI_DEPLOYMENT:?Set a structured-output model deployment name}
+      AZURE_OPENAI_KEY_FILE: /run/secrets/azureOpenAiKey
+    secrets:
+      - azureOpenAiKey
+secrets:
+  azureOpenAiKey:
+    file: ./secrets/azure-openai-key

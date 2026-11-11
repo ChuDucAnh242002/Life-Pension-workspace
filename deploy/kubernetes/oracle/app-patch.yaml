@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workspace
+spec:
+  template:
+    spec:
+      containers:
+        - name: app
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: ""
+            - name: DATABASE_URL
+              value: jdbc:oracle:thin:@oracle:1521/FREEPDB1
+            - name: DATABASE_USER
+              value: workspace
+          volumeMounts:
+            - name: data
+              $patch: delete
+      volumes:
+        - name: data
+          $patch: delete

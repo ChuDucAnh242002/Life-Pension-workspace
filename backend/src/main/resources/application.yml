@@ -1,0 +1,54 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:oracle:thin:@oracle:1521/FREEPDB1}
+    username: ${DATABASE_USER:workspace}
+    password: ${DATABASE_PASSWORD}
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+server:
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        same-site: strict
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+app:
+  adviser-user: ${ADVISER_USER:adviser}
+  adviser-password: ${ADVISER_PASSWORD}
+  ai:
+    enabled: ${AI_ENABLED:false}
+    backend: ${AI_BACKEND:huggingface}
+    provider: ${HF_PROVIDER:}
+    model: ${HF_MODEL:}
+    token-file: ${HF_TOKEN_FILE:}
+    azure:
+      endpoint: ${AZURE_OPENAI_ENDPOINT:}
+      deployment: ${AZURE_OPENAI_DEPLOYMENT:}
+      key-file: ${AZURE_OPENAI_KEY_FILE:}
+    bedrock:
+      region: ${AWS_REGION:}
+      model: ${BEDROCK_MODEL_ID:}
+  policy:
+    transport: ${POLICY_TRANSPORT:demo}
+    simulator: ${POLICY_SIMULATOR:true}
+    timeout-seconds: ${POLICY_TIMEOUT_SECONDS:60}
+    poll-ms: ${POLICY_POLL_MS:3000}
+    mq:
+      host: ${MQ_HOST:mq}
+      port: ${MQ_PORT:1414}
+      queue-manager: ${MQ_QUEUE_MANAGER:QM1}
+      channel: ${MQ_CHANNEL:DEV.APP.SVRCONN}
+      user: ${MQ_USER:app}
+      password: ${MQ_PASSWORD:}
+      password-file: ${MQ_PASSWORD_FILE:}
+      request-queue: DEV.POLICY.REQUESTS
+      reply-queue: DEV.POLICY.REPLIES

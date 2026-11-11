@@ -1,0 +1,36 @@
+services:
+  app:
+    environment:
+      POLICY_TRANSPORT: mq
+      POLICY_SIMULATOR: "true"
+      MQ_HOST: mq
+      MQ_PASSWORD_FILE: /run/secrets/mqAppPassword
+      JAVA_TOOL_OPTIONS: "-Dcom.ibm.mq.cfg.TCP.Connect_Timeout=5"
+    secrets:
+      - mqAppPassword
+    depends_on:
+      mq:
+        condition: service_healthy
+  mq:
+    image: ${MQ_IMAGE:?Set a reviewed versioned IBM MQ Developer image}
+    environment:
+      LICENSE: ${MQ_LICENSE:?Review IBM terms and explicitly set acceptance}
+      MQ_QMGR_NAME: QM1
+      MQ_DEV: "true"
+      MQ_ENABLE_EMBEDDED_WEB_SERVER: "false"
+    secrets:
+      - mqAppPassword
+    volumes:
+      - mq-data:/mnt/mqm
+      - ./deploy/mq/20-policy.mqsc:/etc/mqm/20-policy.mqsc:ro
+    healthcheck:
+      test: ["CMD", "chkmqready"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+volumes:
+  mq-data:
+secrets:
+  mqAppPassword:
+    file: ./secrets/mq-app-password

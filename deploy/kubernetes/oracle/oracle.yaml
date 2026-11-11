@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: oracle
+spec:
+  clusterIP: None
+  selector:
+    app: oracle
+  ports:
+    - port: 1521
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: oracle
+spec:
+  serviceName: oracle
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oracle
+  template:
+    metadata:
+      labels:
+        app: oracle
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: oracle
+          image: gvenzl/oracle-free:23.26.1-slim
+          env:
+            - name: ORACLE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: oracle-bootstrap
+                  key: admin-password
+            - name: APP_USER
+              value: workspace
+            - name: APP_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: workspace-auth
+                  key: database-password
+          ports:
+            - containerPort: 1521
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: "2"
+              memory: 3Gi
+          startupProbe:
+            exec:
+              command: [healthcheck.sh]
+            periodSeconds: 10
+            failureThreshold: 60
+          readinessProbe:
+            exec:
+              command: [healthcheck.sh]
+            periodSeconds: 10
+          volumeMounts:
+            - name: oracle-data
+              mountPath: /opt/oracle/oradata
+  volumeClaimTemplates:
+    - metadata:
+        name: oracle-data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 10Gi

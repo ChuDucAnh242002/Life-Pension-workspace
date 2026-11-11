@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: life-pension-mq
+resources:
+  - ../demo
+  - mq.yaml
+  - ../../mq
+patches:
+  - target:
+      kind: Namespace
+      name: life-pension-demo
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: life-pension-mq
+  - path: app-patch.yaml

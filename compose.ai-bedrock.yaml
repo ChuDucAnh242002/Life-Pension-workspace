@@ -1,0 +1,15 @@
+services:
+  app:
+    environment:
+      AI_ENABLED: "true"
+      AI_BACKEND: bedrock
+      AWS_REGION: ${AWS_REGION:?Set a Bedrock region supporting your model}
+      BEDROCK_MODEL_ID: ${BEDROCK_MODEL_ID:?Set a structured-output Converse model or inference-profile ID}
+      AWS_PROFILE: ${AWS_PROFILE:-default}
+      AWS_SHARED_CREDENTIALS_FILE: /run/secrets/awsCredentials
+      AWS_EC2_METADATA_DISABLED: "true"
+    secrets:
+      - awsCredentials
+secrets:
+  awsCredentials:
+    file: ./secrets/aws-credentials

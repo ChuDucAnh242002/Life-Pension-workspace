@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workspace
+spec:
+  template:
+    spec:
+      containers:
+        - name: app
+          env:
+            - name: POLICY_TRANSPORT
+              value: mq
+            - name: POLICY_SIMULATOR
+              value: "true"
+            - name: MQ_HOST
+              value: mq
+            - name: MQ_PASSWORD_FILE
+              value: /run/secrets/mqAppPassword
+            - name: JAVA_TOOL_OPTIONS
+              value: -Dcom.ibm.mq.cfg.TCP.Connect_Timeout=5
+          volumeMounts:
+            - name: mq-password
+              mountPath: /run/secrets
+              readOnly: true
+      volumes:
+        - name: mq-password
+          secret:
+            secretName: mq-app
+            items:
+              - key: password
+                path: mqAppPassword
