@@ -173,6 +173,7 @@ function ProfileForm({
 
 function App() {
   const [user, setUser] = useState<string | null>(null);
+  const [publicDemo, setPublicDemo] = useState(false);
   const [checking, setChecking] = useState(true);
   const [cases, setCases] = useState<CaseView[]>([]);
   const [detail, setDetail] = useState<CaseDetail | null>(null);
@@ -205,10 +206,11 @@ function App() {
     async function start() {
       try {
         await refreshCsrf();
-        const session = await api<{ username: string }>("/session");
+        const session = await api<{ username: string; publicDemo: boolean }>("/session");
         const items = await api<CaseView[]>("/cases");
         if (active) {
           setUser(session.username);
+          setPublicDemo(session.publicDemo);
           setCases(items);
         }
       } catch (failure) {
@@ -334,9 +336,10 @@ function App() {
     setError("");
     try {
       await login(String(form.get("username")), String(form.get("password")));
-      const session = await api<{ username: string }>("/session");
+      const session = await api<{ username: string; publicDemo: boolean }>("/session");
       const items = await api<CaseView[]>("/cases");
       setUser(session.username);
+      setPublicDemo(session.publicDemo);
       setCases(items);
     } catch (failure) {
       report(failure);
@@ -380,19 +383,20 @@ function App() {
         {user && (
           <div className="user">
             <span>{actorLabel(user)}</span>
-            <button
+            {!publicDemo && <button
               className="secondary"
               disabled={busy}
               onClick={() => void signOut()}
             >
               Sign out
-            </button>
+            </button>}
           </div>
         )}
       </header>
       <div className="banner">
         Fictional profiles only. This workspace does not provide financial
         advice or suitability assessments.
+        {publicDemo && " Anyone with access can view and change shared data."}
       </div>
       <main id="main">
         {error && (

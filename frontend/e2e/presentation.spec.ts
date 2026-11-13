@@ -109,9 +109,13 @@ test("shared activity uses clear product language and retains safety notices", a
   await expect(page.locator(".banner")).toContainText(
     "Fictional profiles only.",
   );
+  await expect(page.locator(".banner")).toContainText(
+    "Anyone with access can view and change shared data.",
+  );
   await expect(
     page.getByText("Not a Nordea product.", { exact: false }),
   ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Sign out" })).toHaveCount(0);
   await page.getByRole("button", { name: /Alex/ }).click();
   await page.getByText("Policy request history (latest 10)").click();
   await page.getByText("Approval history (latest 10)").click();
