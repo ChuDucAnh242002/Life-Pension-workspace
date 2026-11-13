@@ -23,7 +23,7 @@ test("policy request is correlated, persisted, and never merged into declared fa
     name: "Simulated policy information",
   });
   await expect(
-    panel.getByText("In-process demo (not IBM MQ)", { exact: true }),
+    panel.getByText("In-process (not IBM MQ)", { exact: true }),
   ).toBeVisible();
   await panel
     .getByLabel("Fictional policy fixture")

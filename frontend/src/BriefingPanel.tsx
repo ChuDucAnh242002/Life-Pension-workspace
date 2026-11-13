@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
+import { actorLabel } from "./models";
 
 type Source = { id: string; label: string; value: string; origin: string };
 type Question = { id: string; text: string; sourceId: string };
@@ -295,7 +296,8 @@ export default function BriefingPanel({
                 <p>
                   {draft.provider} · {draft.model} · {draft.promptVersion}
                   <br />
-                  Case revision {draft.caseRevision} · {draft.createdBy} ·{" "}
+                  Case revision {draft.caseRevision} ·{" "}
+                  {actorLabel(draft.createdBy)} ·{" "}
                   {new Date(draft.createdAt).toLocaleString("en-FI")}
                 </p>
                 <ul>
@@ -328,7 +330,7 @@ export default function BriefingPanel({
                       ? "STALE"
                       : approval.status}
                     {" · "}
-                    {approval.approvedBy}
+                    {actorLabel(approval.approvedBy)}
                     {" · "}
                     {new Date(approval.approvedAt).toLocaleString("en-FI")}
                     <br />

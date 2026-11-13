@@ -89,3 +89,7 @@ export function label(value: string): string {
     .replaceAll("_", " ")
     .replace(/^./, (first) => first.toUpperCase());
 }
+
+export function actorLabel(actor: string): string {
+  return actor === "public-demo" ? "Shared workspace" : actor;
+}
