@@ -54,6 +54,11 @@ Stop while preserving data:
 docker compose --env-file /dev/null -f compose.demo.yaml down
 ```
 
+`PUBLIC_DEMO_ENABLED=true` explicitly enables anonymous full access as the
+shared `public-demo` actor. Anyone can view and change the same data. Only use
+this with disposable synthetic data; it requires demo policy transport and
+disabled AI, retains CSRF protection, and is disabled by default.
+
 Use `--volumes` only to deliberately erase that stack's cases and history.
 
 ## Run with Oracle

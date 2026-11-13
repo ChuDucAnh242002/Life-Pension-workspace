@@ -22,6 +22,7 @@ management:
     health:
       show-details: never
 app:
+  public-demo: ${PUBLIC_DEMO_ENABLED:false}
   adviser-user: ${ADVISER_USER:adviser}
   adviser-password: ${ADVISER_PASSWORD}
   ai:

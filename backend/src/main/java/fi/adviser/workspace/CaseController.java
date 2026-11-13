@@ -1,6 +1,7 @@
 package fi.adviser.workspace;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +14,11 @@ import static fi.adviser.workspace.CaseModels.*;
 @RequestMapping("/api")
 public class CaseController {
     private final CaseService cases;
-    public CaseController(CaseService cases) { this.cases = cases; }
+    private final boolean publicDemo;
+    public CaseController(CaseService cases, @Value("${app.public-demo:false}") boolean publicDemo) {
+        this.cases = cases;
+        this.publicDemo = publicDemo;
+    }
 
     @GetMapping("/csrf")
     public Map<String, String> csrf(CsrfToken token) {
@@ -21,7 +26,9 @@ public class CaseController {
     }
 
     @GetMapping("/session")
-    public Map<String, String> session(Principal principal) { return Map.of("username", principal.getName()); }
+    public Map<String, Object> session(Principal principal) {
+        return Map.of("username", principal.getName(), "publicDemo", publicDemo);
+    }
 
     @GetMapping("/cases")
     public List<CaseView> list() { return cases.list(); }
