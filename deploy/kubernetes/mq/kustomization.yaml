@@ -3,8 +3,7 @@ kind: Kustomization
 namespace: life-pension-mq
 resources:
   - ../demo
-  - mq.yaml
-  - ../../mq
+  - broker
 patches:
   - target:
       kind: Namespace
