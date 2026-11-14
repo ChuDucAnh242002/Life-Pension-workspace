@@ -56,8 +56,12 @@ docker compose --env-file /dev/null -f compose.demo.yaml down
 
 `PUBLIC_DEMO_ENABLED=true` explicitly enables anonymous full access as the
 shared `public-demo` actor. Anyone can view and change the same data. Only use
-this with disposable synthetic data; it requires demo policy transport and
-disabled AI, retains CSRF protection, and is disabled by default.
+this with disposable synthetic data; it retains CSRF protection and is disabled
+by default. It requires demo policy transport and disabled AI unless
+`PUBLIC_DEMO_EXTERNAL_INTEGRATIONS=true` is explicitly set. That opt-in permits
+MQ only with the simulator enabled, and permits AI calls. Public visitors can
+trigger billable calls and send entered facts to the AI provider; use rate limits,
+provider spending controls, and fictional data only.
 
 Use `--volumes` only to deliberately erase that stack's cases and history.
 

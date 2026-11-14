@@ -35,10 +35,10 @@ public class SecurityConfiguration {
     @Bean
     SecurityFilterChain security(HttpSecurity http, @Value("${app.public-demo:false}") boolean publicDemo,
                                  @Value("${app.policy.transport:demo}") String policyTransport,
-                                 @Value("${app.ai.enabled:false}") boolean aiEnabled) throws Exception {
-        if (publicDemo && (!policyTransport.equals("demo") || aiEnabled)) {
-            throw new IllegalStateException("Public demo access requires demo policy transport and disabled AI.");
-        }
+                                 @Value("${app.policy.simulator:true}") boolean policySimulator,
+                                 @Value("${app.ai.enabled:false}") boolean aiEnabled,
+                                 @Value("${app.public-demo-external-integrations:false}") boolean publicIntegrations) throws Exception {
+        validatePublicDemo(publicDemo, policyTransport, policySimulator, aiEnabled, publicIntegrations);
         if (publicDemo) {
             http.addFilterBefore(new OncePerRequestFilter() {
                 @Override
@@ -67,5 +67,16 @@ public class SecurityConfiguration {
                 .logout(logout -> logout.logoutUrl("/api/logout")
                         .logoutSuccessHandler((request, response, authentication) -> response.setStatus(204)))
                 .build();
+    }
+
+    static void validatePublicDemo(boolean publicDemo, String policyTransport, boolean policySimulator,
+                                   boolean aiEnabled, boolean publicIntegrations) {
+        if (publicDemo && !policyTransport.equals("demo")
+                && !(publicIntegrations && policyTransport.equals("mq") && policySimulator)) {
+            throw new IllegalStateException("Public demo access requires demo policy transport or an explicitly enabled MQ simulator.");
+        }
+        if (publicDemo && aiEnabled && !publicIntegrations) {
+            throw new IllegalStateException("Public demo AI requires explicit external integrations opt-in.");
+        }
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -34,8 +35,10 @@ class PublicDemoSecurityTest {
     }
 
     @Test void publicAccessCannotEnableExternalIntegrations() {
-        var config = new SecurityConfiguration();
-        assertThrows(IllegalStateException.class, () -> config.security(null, true, "mq", false));
-        assertThrows(IllegalStateException.class, () -> config.security(null, true, "demo", true));
+        assertThrows(IllegalStateException.class, () -> SecurityConfiguration.validatePublicDemo(true, "mq", true, false, false));
+        assertThrows(IllegalStateException.class, () -> SecurityConfiguration.validatePublicDemo(true, "demo", true, true, false));
+        assertThrows(IllegalStateException.class, () -> SecurityConfiguration.validatePublicDemo(true, "mq", false, true, true));
+        assertThrows(IllegalStateException.class, () -> SecurityConfiguration.validatePublicDemo(true, "other", true, false, true));
+        assertDoesNotThrow(() -> SecurityConfiguration.validatePublicDemo(true, "mq", true, true, true));
     }
 }
