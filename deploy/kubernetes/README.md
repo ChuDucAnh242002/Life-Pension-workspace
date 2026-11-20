@@ -35,7 +35,7 @@ available to Kubernetes**. Use a private registry and a local Kustomize image ov
 lab's containerd nodes. Do not use a mutable tag for upgrades.
 
 Create `secrets/adviser-password` (12-72 characters) and `secrets/database-password`
-privately using hidden terminal input as described in the main README. Keep their
+privately using hidden terminal input. Keep their
 parent directory mode 700. They are ignored by Git. Then:
 
 ```sh
@@ -133,10 +133,10 @@ by applying both; a combined deployment needs an explicit common namespace/overl
 
 The default demo deliberately cannot generate new AI drafts. Existing drafts and
 approvals survive and can be reviewed without inference. For a live presentation,
-Compose cloud overlays remain the verified setup described in the main README.
+See the [Compose setup](../../README.md#cloud-ai) for running with a cloud provider.
 Kubernetes cloud enablement requires an explicit local deployment patch and Secret:
-`AI_ENABLED=true`, `AI_BACKEND`, and the matching Azure/HF/Bedrock settings.
-Use mounted credential files for Azure/HF, and workload IAM roles for Bedrock on
+`AI_ENABLED=true`, `AI_BACKEND`, and the matching Azure or Bedrock settings.
+Use mounted credential files for Azure and workload IAM roles for Bedrock on
 managed infrastructure. Never bake credentials into images or commit Secret YAML.
 No cloud-enabled Kubernetes variant has been live-verified.
 
