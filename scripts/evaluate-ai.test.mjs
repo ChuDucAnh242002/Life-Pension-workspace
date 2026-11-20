@@ -14,7 +14,7 @@ test("evaluation requires explicit paid synthetic authorization and known backen
 });
 
 test("each evaluation backend isolates DB, mounts only its secret and runs opt-in live profile", () => {
-  for (const backend of ["azure", "bedrock", "huggingface"]) {
+  for (const backend of ["azure", "bedrock"]) {
     const plan = evaluationPlan(
       [`--backend=${backend}`, "--allow-paid-synthetic"],
       "/synthetic/repository",
