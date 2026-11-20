@@ -28,10 +28,7 @@ app:
   adviser-password: ${ADVISER_PASSWORD}
   ai:
     enabled: ${AI_ENABLED:false}
-    backend: ${AI_BACKEND:huggingface}
-    provider: ${HF_PROVIDER:}
-    model: ${HF_MODEL:}
-    token-file: ${HF_TOKEN_FILE:}
+    backend: ${AI_BACKEND:none}
     azure:
       endpoint: ${AZURE_OPENAI_ENDPOINT:}
       deployment: ${AZURE_OPENAI_DEPLOYMENT:}

@@ -50,7 +50,7 @@ class AzureBriefingModelTest {
                 List.of(new Question("confirm_declared", "Confirm facts.", "declared.age")));
     }
 
-    @Test void authenticatesWithApiKeyAndUsesDeploymentNameWithoutHfSuffix() throws Exception {
+    @Test void authenticatesWithApiKeyAndUsesDeploymentName() throws Exception {
         assertEquals(new Selection(List.of("declared.age"), List.of("confirm_declared")), client().select(context()));
         assertEquals("private-test-key", apiKey.get());
         assertNull(bearer.get());
