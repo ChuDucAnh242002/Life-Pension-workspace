@@ -26,7 +26,7 @@ const draft = {
   caseRevision: 1,
   createdAt: "2026-11-08T12:00:00Z",
   createdBy: "adviser",
-  provider: "Local browser mock (not Hugging Face)",
+  provider: "Local browser mock",
   model: "test-model",
   promptVersion: "source-selection-v1",
   summary: [source],
@@ -44,7 +44,7 @@ for (const provider of [
   "Azure OpenAI in Foundry",
   "AWS Bedrock / eu-north-1",
 ]) {
-  test(`${provider} uses the same grounded draft UI without Hugging Face configuration`, async ({
+  test(`${provider} uses the grounded draft UI`, async ({
     page,
   }) => {
     let saved = false;

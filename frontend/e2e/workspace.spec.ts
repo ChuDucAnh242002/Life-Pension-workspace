@@ -24,7 +24,7 @@ test("login, synthetic facts, unknown values, and logout are explicit", async ({
   ).toHaveCount(2);
   await expect(
     page.getByText(
-      "No financial advice, suitability assessment, or live AI generation.",
+      "This workspace does not provide financial advice or suitability assessments.",
       { exact: false },
     ),
   ).toBeVisible();
