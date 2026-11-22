@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: workspace-vault
+automountServiceAccountToken: false
+---
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultConnection
+metadata:
+  name: life-pension-vault
+spec:
+  address: https://vault.example.com:8200
+---
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultAuth
+metadata:
+  name: life-pension-vault
+spec:
+  method: kubernetes
+  mount: kubernetes
+  vaultConnectionRef: life-pension-vault
+  kubernetes:
+    role: life-pension-vault
+    serviceAccount: workspace-vault
+    audiences:
+      - vault
+---
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultStaticSecret
+metadata:
+  name: workspace-auth
+spec:
+  vaultAuthRef: life-pension-vault
+  mount: secret
+  type: kv-v2
+  path: life-pension/demo/workspace-auth
+  refreshAfter: 60s
+  destination:
+    create: true
+    name: workspace-auth
