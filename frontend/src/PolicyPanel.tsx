@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
-import { label, money } from "./models";
+import { actorLabel, label, money } from "./models";
 
 type Fixture = "SOLE_TRADER" | "EMPLOYEE" | "CAREER_CHANGE";
 type RequestStatus =
@@ -154,7 +154,7 @@ export default function PolicyPanel({
           <strong>
             {workspace.transport === "IBM_MQ"
               ? "IBM MQ"
-              : "In-process demo (not IBM MQ)"}
+              : "In-process (not IBM MQ)"}
           </strong>{" "}
           · Simulator {workspace.simulator ? "enabled" : "disabled"}
         </p>
@@ -259,7 +259,7 @@ export default function PolicyPanel({
               {workspace?.requests.map((item) => (
                 <li key={item.id}>
                   {label(item.fixture)} · {label(item.status)} · Revision{" "}
-                  {item.caseRevision} · {item.requestedBy}
+                  {item.caseRevision} · {actorLabel(item.requestedBy)}
                   <br />
                   <span className="muted">
                     Correlation ID: {item.id} · Publication attempts:{" "}

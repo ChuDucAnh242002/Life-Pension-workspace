@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { api, ApiError, login, refreshCsrf } from "./api";
 import {
+  actorLabel,
   amountInput,
   emptyProfile,
   employmentValues,
@@ -172,6 +173,7 @@ function ProfileForm({
 
 function App() {
   const [user, setUser] = useState<string | null>(null);
+  const [publicDemo, setPublicDemo] = useState(false);
   const [checking, setChecking] = useState(true);
   const [cases, setCases] = useState<CaseView[]>([]);
   const [detail, setDetail] = useState<CaseDetail | null>(null);
@@ -204,10 +206,11 @@ function App() {
     async function start() {
       try {
         await refreshCsrf();
-        const session = await api<{ username: string }>("/session");
+        const session = await api<{ username: string; publicDemo: boolean }>("/session");
         const items = await api<CaseView[]>("/cases");
         if (active) {
           setUser(session.username);
+          setPublicDemo(session.publicDemo);
           setCases(items);
         }
       } catch (failure) {
@@ -333,9 +336,10 @@ function App() {
     setError("");
     try {
       await login(String(form.get("username")), String(form.get("password")));
-      const session = await api<{ username: string }>("/session");
+      const session = await api<{ username: string; publicDemo: boolean }>("/session");
       const items = await api<CaseView[]>("/cases");
       setUser(session.username);
+      setPublicDemo(session.publicDemo);
       setCases(items);
     } catch (failure) {
       report(failure);
@@ -373,25 +377,26 @@ function App() {
       </a>
       <header>
         <div>
-          <p className="eyebrow">Adviser preparation • Step 4</p>
+          <p className="eyebrow">Adviser workspace</p>
           <h1>Life &amp; Pension Workspace</h1>
         </div>
         {user && (
           <div className="user">
-            <span>{user}</span>
-            <button
+            <span>{actorLabel(user)}</span>
+            {!publicDemo && <button
               className="secondary"
               disabled={busy}
               onClick={() => void signOut()}
             >
               Sign out
-            </button>
+            </button>}
           </div>
         )}
       </header>
       <div className="banner">
-        Synthetic training data only. No financial advice, suitability
-        assessment, or live AI generation.
+        Fictional profiles only. This workspace does not provide financial
+        advice or suitability assessments.
+        {publicDemo && " Anyone with access can view and change shared data."}
       </div>
       <main id="main">
         {error && (
@@ -459,7 +464,7 @@ function App() {
                   New case
                 </button>
               </div>
-              <p className="muted">One adviser • EUR • fictional profiles</p>
+              <p className="muted">Meeting preparation · EUR</p>
               <ul className="case-list">
                 {cases.map((item) => (
                   <li key={item.id}>
@@ -499,9 +504,8 @@ function App() {
                     information, and track the meeting-preparation workflow.
                   </p>
                   <p>
-                    Simulated policy retrieval is available after selecting a
-                    case. Grounded AI meeting drafts require explicit cloud
-                    provider configuration.
+                    Select a case to explore policy information and prepare
+                    a meeting briefing.
                   </p>
                 </div>
               ) : (
@@ -638,7 +642,7 @@ function App() {
                     <h3>Case history</h3>
                     <p className="muted">
                       Each saved change records actor, revision, and a fact
-                      snapshot. Initial synthetic fixtures predate this history.
+                      snapshot. Some initial profiles predate this history.
                     </p>
                     {!historyReady ? (
                       <p>
@@ -655,7 +659,7 @@ function App() {
                             <details>
                               <summary>
                                 Revision {change.revision} ·{" "}
-                                {label(change.action)} · {change.actor}
+                                {label(change.action)} · {actorLabel(change.actor)}
                               </summary>
                               <p>
                                 {new Date(change.changedAt).toLocaleString(
@@ -697,8 +701,7 @@ function App() {
         )}
       </main>
       <footer>
-        Independent prototype. Not a Nordea product. Use fictional profiles
-        only.
+        Independent workspace. Not a Nordea product. Use fictional profiles only.
       </footer>
     </>
   );

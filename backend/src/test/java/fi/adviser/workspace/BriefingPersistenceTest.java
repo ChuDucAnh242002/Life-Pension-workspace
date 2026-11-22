@@ -38,7 +38,7 @@ class BriefingPersistenceTest {
                         + ";MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE",
                 "--spring.datasource.username=sa", "--spring.datasource.password=test",
                 "--app.adviser-user=adviser", "--app.adviser-password=local-demo-password",
-                "--app.ai.enabled=false", "--app.ai.backend=huggingface",
+                "--app.ai.enabled=false", "--app.ai.backend=none",
                 "--app.policy.transport=demo", "--app.policy.poll-ms=3600000");
     }
 

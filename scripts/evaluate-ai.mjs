@@ -5,12 +5,6 @@ import { resolve } from "node:path";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const backends = {
-  huggingface: {
-    env: ".env.ai",
-    secret: "hf-token",
-    target: "hfToken",
-    variable: "HF_TOKEN_FILE",
-  },
   azure: {
     env: ".env.azure",
     secret: "azure-openai-key",
@@ -28,7 +22,7 @@ const backends = {
 export function evaluationPlan(args, directory = root) {
   if (args.length !== 2 || !args.includes("--allow-paid-synthetic"))
     throw new Error(
-      "Usage: node scripts/evaluate-ai.mjs --backend=azure|bedrock|huggingface --allow-paid-synthetic",
+      "Usage: node scripts/evaluate-ai.mjs --backend=azure|bedrock --allow-paid-synthetic",
     );
   const selector = args.find((arg) => arg.startsWith("--backend="));
   const backend = selector?.slice("--backend=".length);
