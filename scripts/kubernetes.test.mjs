@@ -32,6 +32,19 @@ test("demo stays single-replica, private, persistent and cloud-disabled without 
   assert.doesNotMatch(yaml, /local-demo-password|local-demo-database/);
 });
 
+test("Vault overlay syncs only workspace credentials using namespace-bound Kubernetes auth", () => {
+  const yaml = render("vault");
+  assert.match(yaml, /namespace: life-pension-vault/);
+  assert.match(yaml, /kind: VaultConnection/);
+  assert.match(yaml, /address: https:\/\/vault\.example\.com:8200/);
+  assert.match(yaml, /kind: VaultAuth/);
+  assert.match(yaml, /serviceAccount: workspace-vault/);
+  assert.match(yaml, /kind: VaultStaticSecret/);
+  assert.match(yaml, /path: life-pension\/demo\/workspace-auth/);
+  assert.match(yaml, /name: workspace-auth/);
+  assert.doesNotMatch(yaml, /kind: Secret|skipTLSVerify: true|local-demo-password/);
+});
+
 test("Oracle replaces H2 storage/profile and requires separate private bootstrap secret", () => {
   const yaml = render("oracle");
   assert.match(yaml, /namespace: life-pension-oracle/);
