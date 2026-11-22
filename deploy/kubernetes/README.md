@@ -93,6 +93,52 @@ Resume with `--replicas=1`. Do **not** delete the namespace, PVC, or apply
 `kubectl delete -k` unless you deliberately want to remove data. Default storage
 reclaim policies can delete backing volumes. No automatic cleanup command is supplied.
 
+## Vault-managed credentials
+
+For a shared or deployed cluster, the optional `vault` overlay uses the
+[HashiCorp Vault Secrets Operator (VSO)](https://developer.hashicorp.com/vault/docs/deploy/kubernetes/vso)
+to sync the adviser and database passwords from Vault KV v2 into the existing
+`workspace-auth` Kubernetes Secret. The app deployment and ordinary demo remain
+unchanged. This still stores a copy in Kubernetes: configure Secret RBAC and
+encryption at rest. Use a trusted Vault endpoint with TLS verification enabled;
+this is not a production-ready Vault installation.
+
+Prerequisites: VSO and its CRDs are installed and watching this namespace; a
+Vault Kubernetes auth mount is configured for the cluster; and KV v2 is mounted
+at `secret`. Configure the Vault role to bind service account
+`workspace-vault` in namespace `life-pension-vault`, audience `vault`, and only
+the policy below. The operator needs permission to request a short-lived token
+for that service account.
+
+From the repository root, store both values in Vault using private local files
+as in the [persistent demo setup](#persistent-demo):
+
+```sh
+vault policy write life-pension-vault deploy/kubernetes/vault/workspace-auth-policy.hcl
+vault write auth/kubernetes/role/life-pension-vault \
+  bound_service_account_names=workspace-vault \
+  bound_service_account_namespaces=life-pension-vault \
+  audience=vault token_policies=life-pension-vault ttl=1h
+vault kv put secret/life-pension/demo/workspace-auth \
+  adviser-password=@secrets/adviser-password \
+  database-password=@secrets/database-password
+```
+
+Change the Vault Kubernetes auth mount in `deploy/kubernetes/vault/vault-resources.yaml`
+if yours is not named `kubernetes`. Set `VaultConnection.spec.address` to your
+trusted Vault URL before applying; do not enable TLS verification bypass.
+
+```sh
+kubectl apply -k deploy/kubernetes/vault
+kubectl -n life-pension-vault rollout status deployment/workspace --timeout=300s
+```
+
+VSO refreshes the Kubernetes Secret every 60 seconds. After rotating values,
+restart the app so its environment variables are reloaded. The database password
+must still match the password used to initialize its persistent H2 database.
+The overlay uses its own `life-pension-vault` namespace and PVC, separate from
+the manual demo.
+
 ## Oracle alternative: prepare only
 
 Render with `kubectl kustomize deploy/kubernetes/oracle`. It uses the community
