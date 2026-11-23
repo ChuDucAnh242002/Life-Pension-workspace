@@ -9,5 +9,6 @@ frontend/playwright-report/
 *.log
 *.tsbuildinfo
 .DS_Store
+.devbox/
 secrets/*
 !secrets/.gitkeep
