@@ -1,0 +1,114 @@
+{
+  "lockfile_version": "1",
+  "packages": {
+    "github:NixOS/nixpkgs/nixpkgs-unstable": {
+      "last_modified": "2026-11-21T08:18:15Z",
+      "resolved": "github:NixOS/nixpkgs/93a9ed0a866099a230ed5146a5bb7d16fd5c9b14?lastModified=1795249095&narHash=sha256-8JDgyVvWUZg5m9hNlL8Ge9aT647ng3Ukc8NPMiKNTPQ%3D"
+    },
+    "jdk@21.0.11": {
+      "last_modified": "2026-11-16T14:48:49Z",
+      "resolved": "github:NixOS/nixpkgs/e21fec321d73511849707a7585e4ea155ee4bf40#jdk",
+      "source": "devbox-search",
+      "version": "21.0.11",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/29wzlxcif969gqk4k0hxyw2bn73bd2b3-zulu-ca-jdk-21.0.11",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/29wzlxcif969gqk4k0hxyw2bn73bd2b3-zulu-ca-jdk-21.0.11"
+        }
+      }
+    },
+    "maven@3.9.16": {
+      "last_modified": "2026-10-20T14:23:57Z",
+      "resolved": "github:NixOS/nixpkgs/5adc50831c259f87faeb09ddf930d43597197473#maven",
+      "source": "devbox-search",
+      "version": "3.9.16",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/jd5g8hdhdvl8djyjz2d3zblh4lnyv8jb-maven-3.9.16",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/jd5g8hdhdvl8djyjz2d3zblh4lnyv8jb-maven-3.9.16"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/kbwybq5agx37pkl06xr636y1dx2yjbmp-maven-3.9.16",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/kbwybq5agx37pkl06xr636y1dx2yjbmp-maven-3.9.16"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/334davh2hdmg5ma9pxxz5vpz39dji3vs-maven-3.9.16",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/334davh2hdmg5ma9pxxz5vpz39dji3vs-maven-3.9.16"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/xycjjp2g8bd3ygh3ygm1r37551h4fj6p-maven-3.9.16",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/xycjjp2g8bd3ygh3ygm1r37551h4fj6p-maven-3.9.16"
+        }
+      }
+    },
+    "nodejs@22.23.5": {
+      "last_modified": "2026-11-21T08:18:15Z",
+      "plugin_version": "0.0.6",
+      "resolved": "github:NixOS/nixpkgs/93a9ed0a866099a230ed5146a5bb7d16fd5c9b14#nodejs_22",
+      "source": "devbox-search",
+      "version": "22.23.5",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/53zlm256jl6781j6grsy8kzs9ysy7hc5-nodejs-22.23.5",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/53zlm256jl6781j6grsy8kzs9ysy7hc5-nodejs-22.23.5"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/s6zi3nj2jwqz65xz4m6qrdj4p7qahxn0-nodejs-22.23.5",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/s6zi3nj2jwqz65xz4m6qrdj4p7qahxn0-nodejs-22.23.5"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/d8354ij82yyprha74a5r7y2rbj01cik9-nodejs-22.23.5",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/d8354ij82yyprha74a5r7y2rbj01cik9-nodejs-22.23.5"
+        }
+      }
+    }
+  }
+}

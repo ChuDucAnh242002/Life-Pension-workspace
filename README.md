@@ -90,6 +90,23 @@ and permits MQ only with its simulator enabled.
 
 ## Verify
 
+### Optional Devbox workflow
+
+Install [Devbox](https://www.jetify.com/docs/devbox/) and run from the repository
+root:
+
+```sh
+devbox run doctor  # show the Java, Maven, Node and npm versions
+devbox run setup   # install frontend dependencies with npm ci
+devbox run test    # focused backend test and frontend unit tests
+```
+
+Devbox provides a locked Java 21, Maven and Node 22 toolchain; the exact Java
+patch can vary by platform. `setup` replaces `frontend/node_modules` as `npm ci`
+normally does. Maven downloads its dependencies when tests first run. These
+commands require no running services or cloud credentials; the full checks
+below and Docker workflow remain available independently.
+
 - Backend (Java 21 and Maven): `cd backend && mvn -B verify`.
 - Frontend (Node 22): `cd frontend && npm ci && npm run lint && npm test && npm run build`.
 - Browser tests: with the default stack running, run
