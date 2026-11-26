@@ -97,15 +97,22 @@ root:
 
 ```sh
 devbox run doctor  # show the Java, Maven, Node and npm versions
-devbox run setup   # install frontend dependencies with npm ci
+devbox run setup   # install frontend dependencies and set up the optional kind lab
+devbox run setup-frontend  # install frontend dependencies only
 devbox run test    # focused backend test and frontend unit tests
 ```
 
 Devbox provides a locked Java 21, Maven and Node 22 toolchain; the exact Java
 patch can vary by platform. `setup` replaces `frontend/node_modules` as `npm ci`
 normally does. Maven downloads its dependencies when tests first run. These
-commands require no running services or cloud credentials; the full checks
-below and Docker workflow remain available independently.
+tests require no running services or cloud credentials; the full checks below
+and Docker workflow remain available independently.
+
+The optional shared kind lab additionally offers `devbox run pull`,
+`devbox run deploy-all` and `devbox run deploy life-pension`. It requires
+`di-agent` to be checked out as a sibling directory. See its
+[workspace lab guide](https://github.com/ChuDucAnh242002/di-agent#shared-devbox-kubernetes-lab)
+for prerequisites, synthetic-data and persistence safeguards.
 
 - Backend (Java 21 and Maven): `cd backend && mvn -B verify`.
 - Frontend (Node 22): `cd frontend && npm ci && npm run lint && npm test && npm run build`.

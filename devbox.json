@@ -15,8 +15,13 @@
         "npm --version"
       ],
       "setup": [
-        "cd frontend && npm ci"
+        "(cd frontend && npm ci)",
+        "node ../di-agent/.github/scripts/devbox-workspace.mjs setup"
       ],
+      "setup-frontend": "cd frontend && npm ci",
+      "pull": "node ../di-agent/.github/scripts/devbox-workspace.mjs pull",
+      "deploy-all": "node ../di-agent/.github/scripts/devbox-workspace.mjs deploy-all",
+      "deploy": "node ../di-agent/.github/scripts/devbox-workspace.mjs deploy \"$@\"",
       "test": [
         "mvn -B -f backend/pom.xml -Dtest=BriefingServiceTest test",
         "cd frontend && npm test"

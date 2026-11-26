@@ -21,7 +21,7 @@ jobs:
           disable-nix-access-token: 'true'
       - run: |
           devbox run doctor
-          devbox run setup
+          devbox run setup-frontend
           devbox run test
           git diff --exit-code -- devbox.json devbox.lock
   tests:
